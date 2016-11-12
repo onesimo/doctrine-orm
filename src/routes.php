@@ -6,6 +6,7 @@ use Aura\Router\RouterContainer;
 use Psr\Http\Message\ServerRequestInterface;
 use Zend\Diactoros\Response;
 use Zend\Diactoros\ServerRequestFactory;
+//use Slim\Views\PhpRenderer;
 
  
 $request = ServerRequestFactory::fromGlobals(
@@ -16,11 +17,23 @@ $routerContainer = new RouterContainer();
   
 $map = $routerContainer->getMap();
 
-$map->get('home','/home', function($request, $response){
-    $response->getBody()->write('Hello world!');
-    return $response;
+$view = new Slim\Views\PhpRenderer(__DIR__.'/../templates/');
+
+$entityManager = getEntityManager();
+
+$map->get('home','/home', function($request, $response) use ($view){
+
+    return $view->render($response, 'home.phtml', ['test' => 'Slim PHP view functionado']);
 });
- 
+
+$map->get('categories.list','/categories', function($request, $response) use ($view, $entityManager){
+    $repository = $entityManager->getRepository(Category::class);
+    $categories = $repository->findAll();
+    
+    return $view->render($response, 'categories/list.phtml', [
+        'categories' => $categories]);
+});
+    
 
 $matcher = $routerContainer->getMatcher();
 $route = $matcher->match($request);
