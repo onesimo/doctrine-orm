@@ -1,0 +1,19 @@
+/*
+* Validate your schema
+*/
+doctrine orm:validate-schema
+
+
+/*
+* All the changes in your schema
+*/
+doctrine orm:schema-tool:update --dump-sq
+
+
+/*
+* Execute changes
+*/
+doctrine orm:schema-tool:update --force
+
+
+
