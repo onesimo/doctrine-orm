@@ -1,22 +1,26 @@
-<?php include __DIR__. '/../header.html' ?>
-	<div class="container">
-		<div class="row">
-			<h3>Listagem de categorias </h3>
-			<table class="table">
-				<thead>
+<?php include __DIR__. '/../header.html'?>
+<div class="container">
+	<div class="row">
+		<h3>Listagem de categorias</h3>
+		<a href='/categories/create'>Nova categoria</a>
+		<table class="table">
+			<thead>
 				<tr>
 					<th>ID</th>
-					<th>Name</th>
+					<th>Nome</th>
+					<th>Ações</th>
 				</tr>
-				<tbody>
+			<tbody>
 				<?php foreach ($categories as $category):?>
 					<tr>
-						<td><?php echo $category->getId(); ?></td>
-						<td><?php echo $category->getName(); ?></td>
-					</tr>
+					<td><?php echo $category->getId(); ?></td>
+					<td><?php echo $category->getName(); ?></td>
+					<td><?php echo "<a href='/categories/{$category->getId()}/edit'>Editar</a>"; ?> | 
+						<?php echo "<a href='/categories/{$category->getId()}/remove'>Remove</a>"; ?> </td>
+				</tr>
 				<?php endforeach;?>
 				</tbody>
-			</table>
-		</div>
+		</table>
 	</div>
+</div>
 <?php include __DIR__. '/../footer.html' ?>

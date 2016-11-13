@@ -14,7 +14,9 @@ $request = ServerRequestFactory::fromGlobals(
 );
 
 $routerContainer = new RouterContainer(); 
-  
+
+$generator = $routerContainer->getGenerator();
+
 $map = $routerContainer->getMap();
 
 $view = new Slim\Views\PhpRenderer(__DIR__.'/../templates/');
@@ -33,7 +35,58 @@ $map->get('categories.list','/categories', function($request, $response) use ($v
     return $view->render($response, 'categories/list.phtml', [
         'categories' => $categories]);
 });
+
+$map->get('categories.create','/categories/create', function($request, $response) use ($view, $entityManager){
+    return $view->render($response, 'categories/create.phtml');
+});
+
+$map->post('categories.store','/categories/store', function(ServerRequestInterface $request, $response) use ($view, $entityManager,$generator){
+    $data = $request->getParsedBody();
+    $category = new Category();
+    $category->setName($data['name']);
+    $entityManager->persist($category);
+    $entityManager->flush();
+    $uri = $generator->generate('categories.list');
     
+    return new Response\RedirectResponse($uri);
+});
+     
+$map->get('categories.edit','/categories/{id}/edit', function(ServerRequestInterface $request, $response) use ($view, $entityManager){
+    $id = $request->getAttribute('id');
+    $repository = $entityManager->getRepository(Category::class);
+    $category = $repository->find($id);
+    return $view->render($response, 'categories/edit.phtml',[
+        'category' => $category
+    ]);
+});
+
+$map->post('categories.update','/categories/{id}/update', function(ServerRequestInterface $request, $response) use ($view, $entityManager,$generator){
+    $id = $request->getAttribute('id');
+    $repository = $entityManager->getRepository(Category::class);
+    $category = $repository->find($id);
+    
+    $data = $request->getParsedBody();
+    
+    $category->setName($data['name']);
+     
+    $entityManager->flush();
+    $uri = $generator->generate('categories.list');
+
+    return new Response\RedirectResponse($uri);
+});
+
+$map->get('categories.remove','/categories/{id}/remove', function(ServerRequestInterface $request, $response) use ($view, $entityManager,$generator){
+    $id = $request->getAttribute('id');
+    $repository = $entityManager->getRepository(Category::class);
+    $category = $repository->find($id);
+    
+    $entityManager->remove($category);
+    $entityManager->flush();
+    
+    $uri = $generator->generate('categories.list');
+    return new Response\RedirectResponse($uri);
+});
+
 
 $matcher = $routerContainer->getMatcher();
 $route = $matcher->match($request);
@@ -48,6 +101,9 @@ $callable = $route->handler;
 /** @var Response $response  */
 $response = $callable($request, new Response());
 
-echo $response->getBody();
-
+if ($response instanceof Response\RedirectResponse) {
+    header("location:{$response->getHeader("location")[0]}");
+} elseif ($response instanceof Response) {
+    echo $response->getBody();
+}
  
